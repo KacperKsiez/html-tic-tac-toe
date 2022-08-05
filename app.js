@@ -16,6 +16,7 @@ let UIController = {
         tour:'.tour',
 
         container: '.container',
+        playAgain: '.win-text',
 
     },
     divElements: {
@@ -52,30 +53,30 @@ let UIController = {
     },
 
     drawLine: function(winPosition){
-        let line, squares
-        if(winPosition.startsWith('row')){
-            line = this.divElements.lineRow;
-        } else if(winPosition.startsWith('col')){
-            line = this.divElements.lineCol;
-        }
-        else if(winPosition==='cross1'){
-            line = this.divElements.lineCross1;
-        }
-        else if(winPosition==='cross2'){
-            line = this.divElements.lineCross2;
-        }
+        let line, squares;
+        
+        if(winPosition.startsWith('row')) line = this.divElements.lineRow;
+
+        else if(winPosition.startsWith('col')) line = this.divElements.lineCol;
+        
+        else if(winPosition==='cross1') line = this.divElements.lineCross1;
+        
+        else if(winPosition==='cross2') line = this.divElements.lineCross2;
+        
         squares = document.querySelectorAll(this.DOMString[winPosition])
 
         squares.forEach((square)=>{
             square.innerHTML+=line;
-            console.log(square)
         });
     },
 
     drawWinner: function(winner){
         // document.querySelector(this.DOMString.tour).innerHTML=`${this.divElements[winner]} <span>won the game</span>`;
+        if(winner==='o') winner=this.divElements.o;
+        else if (winner==='o') winner=this.divElements.x;
         document.querySelector(this.DOMString.container).classList.add('win')
-        document.querySelector('.win').insertAdjacentHTML('afterbegin', `<div class="win-text">helo</div>`)
+        // TODO: TUTAJ ZROBIC OSOBNY DIV NA PRZYCISK PLAY AGAIN
+        document.querySelector('.win').insertAdjacentHTML('afterbegin', `<div class="win-text">The winner is ${winner}</div>`)
     }
 }
 
@@ -86,7 +87,7 @@ var GameController = {
             if(this.actual==='o'){
                 return 'x'
             }
-            else{
+            else if(this.actual==='x'){
                 return 'o'
             }
         },
@@ -95,6 +96,12 @@ var GameController = {
         row1: ['', '', ''],
         row2: ['', '', ''],
         row3: ['', '', '']
+    },
+    isFullMap: function(){
+        let fullCount=0;
+        let map = this.mapGame;
+        
+        return false
     },
     updateGameMap: function(number){
         
@@ -106,76 +113,98 @@ var GameController = {
             this.mapGame.row3[number-7]=this.tour.actual;
         }
     },
-    switchTour: function(){
-        if(this.tour.actual=='x'){
-            this.tour.actual='o'
+    checkMove: function(number){
+        if(number<=3){
+            if(this.mapGame.row1[number-1]!='') return false
+            else return true;
+        } else if(number>=4 && number<=6){
+            if(this.mapGame.row2[number-4]!='') return false
+            else return true;
         } else{
-            this.tour.actual='x'
+            if(this.mapGame.row3[number-7]!='') return false
+            else return true;
         }
+    },
+    switchTour: function(){
+        if(this.tour.actual=='x') this.tour.actual='o'
+        else this.tour.actual='x'
     },
 
     // Checking if the player type won the game
-    checkWin: function(type=this.tour.actual){
+    checkWin: function(){
+
         let map = this.mapGame;
+        let fullCount = 0;
+        let type, types=['o', 'x']
+        let ok=0;
 
-        // check win in columns
-        for(i=1; i<=3; i++){
-            let actual = map[`row${i}`];
-            if (actual[0]===type &&
-                actual[1]===type && 
-                actual[2]===type){
-                    return `row${i}`;
+        for(z=0; z<=1; z++){
+            fullCount=0;
+            type=types[z]
+
+            // check win in columns
+            for(i=1; i<=3; i++){
+                let actual = map[`row${i}`];
+                if (actual[0]===type &&
+                    actual[1]===type && 
+                    actual[2]===type) return `row${i}`;
             }
-        }
 
-        // check win in rows
-        for(i=0; i<=2; i++){
-            if(map.row1[i]===type &&
-               map.row2[i]===type &&
-               map.row3[i]===type){
-                   return `col${i+1}`
-               }
-        }
+            // check win in rows
+            for(i=0; i<=2; i++){
+                if(map.row1[i]===type &&
+                map.row2[i]===type &&
+                map.row3[i]===type){
+                    return `col${i+1}`
+                }
+            }
 
-        // check win in cross
-        if(map.row1[0]===type &&
-           map.row2[1]===type &&
-           map.row3[2]===type    
-        ){
-            return 'cross1'
-        }
+            // check win in cross
+            if(map.row1[0]===type &&
+               map.row2[1]===type &&
+               map.row3[2]===type) return 'cross1'
 
-        // check win in cross
-        if(
-           map.row1[2]===type &&
-           map.row2[1]===type &&
-           map.row3[0]===type    
-        ){
-            return 'cross2'
+            // check win in cross
+            if(map.row1[2]===type &&
+               map.row2[1]===type &&
+               map.row3[0]===type) return 'cross2'
+                
+            for(i=1; i<=3; i++){
+                for(a=0; a<=2; a++) if(map[`row${i}`][a]!=='') fullCount++
+            }
+            if(fullCount>=9) return 'full'
         }
         return false;
     }
-
 }
-console.log(GameController.checkWin())
 
 var Controller = {
     tour: GameController.tour,
     playerMove: function(number){
-        let win;
-        
 
-        UIController.writeTour(this.tour.reverse())
-        UIController.addPlayerMove(this.tour.actual, number)
-        GameController.updateGameMap(number)
-        GameController.switchTour()
-        if(win = GameController.checkWin(this.tour.reverse())){
-            UIController.drawLine(win)
-            UIController.drawWinner(this.tour.reverse())        
-            return
+        if(GameController.checkMove(number)){
+            UIController.writeTour(this.tour.reverse())
+            UIController.addPlayerMove(this.tour.actual, number)
+            GameController.updateGameMap(number)
+            GameController.switchTour()
+            this.gameOver(GameController.checkWin(this.tour.reverse()))
         }
-        
-        
+
+    },
+
+    gameOver: function(isWin){
+        if(isWin==='full'){
+            UIController.drawWinner('FULL MAP')
+        }
+        else if(isWin){
+            UIController.drawLine(isWin)
+            UIController.drawWinner(this.tour.reverse())
+
+            return true;
+        }
+        else{
+            return false;
+        }
     },
 
     setupListeners: function(){
@@ -190,6 +219,7 @@ var Controller = {
     init: function(){
         let tour = GameController.tour;
         this.setupListeners();
+        UIController.writeTour(tour.actual)
     },
     
 }
