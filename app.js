@@ -44,7 +44,6 @@ let UIController = {
             default:
                 return -1        
         }
-
     },
 
     writeTour: function(tour){
@@ -54,13 +53,10 @@ let UIController = {
 
     drawLine: function(winPosition){
         let line, squares;
-        
-        if(winPosition.startsWith('row')) line = this.divElements.lineRow;
 
+        if(winPosition.startsWith('row')) line = this.divElements.lineRow;
         else if(winPosition.startsWith('col')) line = this.divElements.lineCol;
-        
         else if(winPosition==='cross1') line = this.divElements.lineCross1;
-        
         else if(winPosition==='cross2') line = this.divElements.lineCross2;
         
         squares = document.querySelectorAll(this.DOMString[winPosition])
@@ -71,9 +67,8 @@ let UIController = {
     },
 
     drawWinner: function(winner){
-        // document.querySelector(this.DOMString.tour).innerHTML=`${this.divElements[winner]} <span>won the game</span>`;
         if(winner==='o') winner=this.divElements.o;
-        else if (winner==='o') winner=this.divElements.x;
+        else if (winner==='x') winner=this.divElements.x;
         document.querySelector(this.DOMString.container).classList.add('win')
         // TODO: TUTAJ ZROBIC OSOBNY DIV NA PRZYCISK PLAY AGAIN
         document.querySelector('.win').insertAdjacentHTML('afterbegin', `<div class="win-text">The winner is ${winner}</div>`)
@@ -84,12 +79,8 @@ var GameController = {
     tour: {
         actual: 'o',
         reverse:function(){
-            if(this.actual==='o'){
-                return 'x'
-            }
-            else if(this.actual==='x'){
-                return 'o'
-            }
+            if(this.actual==='o') return 'x'
+            else if(this.actual==='x') return 'o'
         },
     },
     mapGame : {
@@ -97,21 +88,13 @@ var GameController = {
         row2: ['', '', ''],
         row3: ['', '', '']
     },
-    isFullMap: function(){
-        let fullCount=0;
-        let map = this.mapGame;
-        
-        return false
-    },
     updateGameMap: function(number){
-        
-        if(number<=3){
+        if(number<=3)
             this.mapGame.row1[number-1]=this.tour.actual;
-        } else if(number>=4 && number<=6){
+        else if(number>=4 && number<=6)
             this.mapGame.row2[number-4]=this.tour.actual;
-        } else{
+        else
             this.mapGame.row3[number-7]=this.tour.actual;
-        }
     },
     checkMove: function(number){
         if(number<=3){
@@ -132,7 +115,6 @@ var GameController = {
 
     // Checking if the player type won the game
     checkWin: function(){
-
         let map = this.mapGame;
         let fullCount = 0;
         let type, types=['o', 'x']
@@ -208,7 +190,6 @@ var Controller = {
     },
 
     setupListeners: function(){
-
         for(let i=1; i<=9; i++){
             document.querySelector(`.s${i}`).addEventListener('click', ()=>{
                 this.playerMove(i);
@@ -221,6 +202,5 @@ var Controller = {
         this.setupListeners();
         UIController.writeTour(tour.actual)
     },
-    
 }
 Controller.init();
