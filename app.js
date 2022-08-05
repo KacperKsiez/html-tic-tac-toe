@@ -1,6 +1,6 @@
 let UIController = {
     DOMString: {
-        square: 'square',
+        square: '.square',
 
         col1: '.s1, .s4, .s7',
         col2: '.s2, .s5, .s8',
@@ -16,7 +16,8 @@ let UIController = {
         tour:'.tour',
 
         container: '.container',
-        playAgain: '.win-text',
+        playAgain: '.play-again',
+        gameOver: '.win-text',
 
     },
     divElements: {
@@ -26,6 +27,7 @@ let UIController = {
         lineCol: `<div class="line-col"></div>`,
         lineCross1: `<div class="line-cross1"></div>`,
         lineCross2: `<div class="line-cross2"></div>`,
+        gameOver: `<div class="win-text">The winner is %winner%<div class="play-again">Click to play again</div></div>` 
     },
 
     addPlayerMove: function(type, position){
@@ -45,7 +47,15 @@ let UIController = {
                 return -1        
         }
     },
+    refresh: function(){
+        let squares = document.querySelectorAll(this.DOMString.square)
+        squares.forEach((square)=>{
+            square.innerHTML=''
+        });
 
+        document.querySelector(this.DOMString.container).classList.remove('win')
+        document.querySelector(this.DOMString.gameOver).remove()
+    },
     writeTour: function(tour){
         let tourDisplay = document.querySelector(this.DOMString.tour);
         tourDisplay.innerHTML=`Now plays ${this.divElements[tour]}`;
@@ -70,8 +80,8 @@ let UIController = {
         if(winner==='o') winner=this.divElements.o;
         else if (winner==='x') winner=this.divElements.x;
         document.querySelector(this.DOMString.container).classList.add('win')
-        // TODO: TUTAJ ZROBIC OSOBNY DIV NA PRZYCISK PLAY AGAIN
-        document.querySelector('.win').insertAdjacentHTML('afterbegin', `<div class="win-text">The winner is ${winner}</div>`)
+
+        document.querySelector('.win').insertAdjacentHTML('afterbegin', UIController.divElements.gameOver.replace('%winner%', winner))
     }
 }
 
@@ -95,6 +105,10 @@ var GameController = {
             this.mapGame.row2[number-4]=this.tour.actual;
         else
             this.mapGame.row3[number-7]=this.tour.actual;
+    },
+    refreshMap: function(){
+        for(i=1; i<=3; i++)
+            for(a=0; a<=2; a++) this.mapGame[`row${i}`][a]=''
     },
     checkMove: function(number){
         if(number<=3){
@@ -181,12 +195,10 @@ var Controller = {
         else if(isWin){
             UIController.drawLine(isWin)
             UIController.drawWinner(this.tour.reverse())
-
-            return true;
-        }
-        else{
+        } else{
             return false;
         }
+        document.querySelector(UIController.DOMString.playAgain).addEventListener('click', this.refreshGame)
     },
 
     setupListeners: function(){
@@ -195,6 +207,11 @@ var Controller = {
                 this.playerMove(i);
             })
         }
+    },
+    refreshGame: function(){
+        GameController.refreshMap();
+        UIController.refresh();
+        console.log('ddd')
     },
 
     init: function(){
