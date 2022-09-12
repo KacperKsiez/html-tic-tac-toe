@@ -19,6 +19,10 @@ let UIController = {
         playAgain: '.play-again',
         gameOver: '.win-text',
 
+        stats:'.stats',
+        statsItems:'.stats__item',
+        statsList:'.stats__list'
+
     },
     divElements: {
         x: `<i class="element bi bi-x-lg"></i>`,
@@ -82,6 +86,10 @@ let UIController = {
         document.querySelector(this.DOMString.container).classList.add('win')
 
         document.querySelector('.win').insertAdjacentHTML('afterbegin', UIController.divElements.gameOver.replace('%winner%', winner))
+    },
+    addToHistory(winner){
+        let list = document.querySelector(this.DOMString.statsList)
+        
     }
 }
 
@@ -97,6 +105,9 @@ var GameController = {
         row1: ['', '', ''],
         row2: ['', '', ''],
         row3: ['', '', '']
+    },
+    history:{
+        // game history
     },
     updateGameMap: function(number){
         if(number<=3)
@@ -195,6 +206,7 @@ var Controller = {
         else if(isWin){
             UIController.drawLine(isWin)
             UIController.drawWinner(this.tour.reverse())
+
         } else{
             return false;
         }
